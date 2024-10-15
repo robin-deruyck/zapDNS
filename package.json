@@ -6,9 +6,8 @@
   "description": "ZapDNS is a cross-platform tool for quickly managing and switching DNS settings to save time and optimize network configurations.",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js",
-    "build": "ncc build -o dist && sh build.sh",
+    "start": "ncc build  && node dist/index.js",
+    "build": "ncc build  && sh build.sh",
     "pretty": "prettier --write \"{**/*,*}.{js,ts,jsx,tsx}\""
   },
   "keywords": [
@@ -40,7 +39,6 @@
     "@types/node": "^22.7.5",
     "@vercel/ncc": "^0.38.2",
     "prettier": "^3.3.3",
-    "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   },
   "engines": {
