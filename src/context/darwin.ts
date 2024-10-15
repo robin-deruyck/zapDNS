@@ -1,10 +1,6 @@
-import { Context } from '../types'
+import { DNSContext } from '../types'
 
-export const darwinContext: Context = {
-  getInterfacesName: () => {
-    return []
-  },
-  getDNSSettings: () => {},
+export const darwinContext: DNSContext = {
   updateDNS: () => {},
   deleteDNS: () => {}
 }

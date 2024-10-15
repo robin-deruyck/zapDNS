@@ -1,8 +1,6 @@
-export type Context = {
-  getInterfacesName: () => string[]
-  getDNSSettings: (error: Error | null, stdout: string, stderr: string, resolve: (value: unknown) => void) => void
+export type DNSContext = {
   updateDNS: (interfaceName: string, dnsServers: string[]) => void
-  deleteDNS: () => void
+  deleteDNS: (interfaceName: string) => void
 }
 
 export enum DNSOptions {

@@ -1,4 +1,4 @@
-import { Context, DNSOptions } from './types'
+import { DNSContext, DNSOptions } from './types'
 import inquirer from 'inquirer'
 import chalk from 'chalk'
 import { getServers } from 'node:dns'
@@ -6,16 +6,18 @@ import { networkInterfaces, platform as plf } from 'node:os'
 import { createPlatformHandler } from './platform-handlers'
 
 export class DNSChanger {
-  platformHandler: Context | null = null
-  knowDNS = {
+  private readonly platformHandler: DNSContext
+  private readonly knownDNS = {
     google: ['8.8.4.4', '8.8.8.8', '2001:4860:4860::8844', '2001:4860:4860::8888'],
     cloudflare: ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001']
   }
 
-  async start() {
-    try {
-      this.init()
+  constructor() {
+    this.platformHandler = createPlatformHandler(plf())
+  }
 
+  async start(): Promise<void> {
+    try {
       console.log(chalk.blue('Fetching current DNS settings...'))
       this.displayCurrentDNS()
 
@@ -25,51 +27,56 @@ export class DNSChanger {
         return
       }
 
-      let servers = []
-      if (dnsOption === DNSOptions.GOOGLE) {
-        servers = this.knowDNS.google
-      } else if (dnsOption === DNSOptions.CLOUDFLARE) {
-        servers = this.knowDNS.cloudflare
-      } else if (dnsOption === DNSOptions.BOTH) {
-        servers = [...this.knowDNS.google, ...this.knowDNS.cloudflare]
-      } else if (dnsOption === DNSOptions.CUSTOM) {
-        const { ipv4DNS, ipv6DNS } = await this.promptCustomDNS()
-        servers = [ipv4DNS, ipv6DNS].filter(Boolean)
-      } else if (dnsOption === DNSOptions.ERASED) {
-        //  delete all DNS
-      }
-
-      for (const interfaceName of interfaceNames) {
-        await this.updateDNS(interfaceName, servers)
-      }
-
+      await this.processDNSChanges(dnsOption, interfaceNames)
       this.waitForExit()
-    } catch (error: any) {
-      console.error(chalk.red(`Error: ${error.message}`))
+    } catch (error) {
+      console.error(chalk.red(`Error: ${error instanceof Error ? error.message : String(error)}`))
     }
   }
 
-  init() {
-    this.platformHandler = createPlatformHandler(plf())
-  }
-
-  async updateDNS(interfaceName: string, servers: string[] = []) {
-    console.log('Updating DNS addresses for ', chalk.yellow(interfaceName), 'with servers', servers)
-
-    const currentServers = getServers()
-    const newServers = servers.filter((server) => !currentServers.includes(server))
-    this.platformHandler!.updateDNS(interfaceName, newServers)
-  }
-
-  displayCurrentDNS() {
+  private displayCurrentDNS(): void {
     const dnsAddresses = getServers()
-    console.log(chalk.magenta(`You currently have ${dnsAddresses.length}  addresses : `))
+    console.log(chalk.magenta(`You currently have ${dnsAddresses.length} addresses:`))
     dnsAddresses.forEach((address, index) => {
       console.log(chalk.magenta(`DNS server ${index + 1}: ${address}`))
     })
   }
 
-  async promptDNSChange() {
+  private async processDNSChanges(option: DNSOptions, interfaceNames: string[]): Promise<void> {
+    const servers = await this.getDnsServers(option)
+    for (const interfaceName of interfaceNames) {
+      if (option === DNSOptions.ERASED) {
+        this.platformHandler.deleteDNS(interfaceName)
+      } else {
+        await this.updateDNS(interfaceName, servers)
+      }
+    }
+  }
+
+  private async getDnsServers(option: DNSOptions): Promise<string[]> {
+    switch (option) {
+      case DNSOptions.GOOGLE:
+        return this.knownDNS.google
+      case DNSOptions.CLOUDFLARE:
+        return this.knownDNS.cloudflare
+      case DNSOptions.BOTH:
+        return [...this.knownDNS.google, ...this.knownDNS.cloudflare]
+      case DNSOptions.CUSTOM:
+        return this.promptCustomDNS()
+      default:
+        return []
+    }
+  }
+
+  private async updateDNS(interfaceName: string, servers: string[]): Promise<void> {
+    console.log('Updating DNS addresses for', chalk.yellow(interfaceName), 'with servers', servers)
+    const currentServers = getServers()
+    // Silently remove any servers that are already in the list
+    const newServers = servers.filter((server) => !currentServers.includes(server))
+    this.platformHandler.updateDNS(interfaceName, newServers)
+  }
+
+  private async promptDNSChange(): Promise<{ dnsOption: DNSOptions; interfaceNames: string[] }> {
     return inquirer.prompt([
       {
         type: 'list',
@@ -92,8 +99,8 @@ export class DNSChanger {
     ])
   }
 
-  async promptCustomDNS() {
-    return inquirer.prompt([
+  private async promptCustomDNS(): Promise<string[]> {
+    const { ipv4DNS, ipv6DNS } = await inquirer.prompt([
       {
         type: 'input',
         name: 'ipv4DNS',
@@ -105,12 +112,13 @@ export class DNSChanger {
         message: 'Enter custom IPv6 DNS (or leave blank to skip):'
       }
     ])
+    return [ipv4DNS, ipv6DNS].filter(Boolean)
   }
 
-  waitForExit() {
+  private waitForExit(): void {
     console.log('Press any key to exit...')
     process.stdin.setRawMode(true)
     process.stdin.resume()
-    process.stdin.on('data', process.exit.bind(process, 0))
+    process.stdin.once('data', () => process.exit(0))
   }
 }

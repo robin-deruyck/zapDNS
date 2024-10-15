@@ -1,10 +1,6 @@
-import { Context } from '../types'
+import { DNSContext } from '../types'
 
-export const linuxContext: Context = {
-  getInterfacesName: () => {
-    return []
-  },
-  getDNSSettings: () => {},
+export const linuxContext: DNSContext = {
   updateDNS: () => {},
   deleteDNS: () => {}
 }
