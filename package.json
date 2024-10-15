@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "ncc build",
-    "package": "ncc build && sh package.sh",
+    "build": "ncc build -o dist && sh build.sh",
     "pretty": "prettier --write \"{**/*,*}.{js,ts,jsx,tsx}\""
   },
   "keywords": [
