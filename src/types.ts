@@ -1,11 +1,6 @@
 export type Context = {
   getInterfacesName: () => string[]
-  getDNSSettings: (
-    error: Error | null,
-    stdout: string,
-    stderr: string,
-    resolve: (value: unknown) => void
-  ) => void
+  getDNSSettings: (error: Error | null, stdout: string, stderr: string, resolve: (value: unknown) => void) => void
   updateDNS: (interfaceName: string, dnsServers: string[]) => void
   deleteDNS: () => void
 }

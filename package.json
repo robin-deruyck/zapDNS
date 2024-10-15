@@ -1,17 +1,15 @@
 {
   "name": "zapdns",
-  "version": "0.1.0-beta",
+  "version": "0.1.1-beta",
   "engine": {
   },
   "description": "ZapDNS is a cross-platform tool for quickly managing and switching DNS settings to save time and optimize network configurations.",
   "main": "src/index.ts",
-  "bin": {
-    "zapdns": "./dist/index.js"
-  },
   "scripts": {
-    "dev": "ncc build -w src/index.ts",
-    "start": "node index.js",
-    "build": "ncc build && pkg . --output dist/zapdns.exe",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "ncc build",
+    "package": "ncc build && sh package.sh",
     "pretty": "prettier --write \"{**/*,*}.{js,ts,jsx,tsx}\""
   },
   "keywords": [
@@ -29,10 +27,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/zapdns.git"
+    "url": "https://github.com/robin-deruyck/zapDNS"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/zapdns/issues"
+    "url": "https://github.com/robin-deruyck/zapDNS/issues"
   },
   "homepage": "https://github.com/yourusername/zapdns#readme",
   "dependencies": {
@@ -42,14 +40,9 @@
   "devDependencies": {
     "@types/node": "^22.7.5",
     "@vercel/ncc": "^0.38.2",
-    "pkg": "^5.8.1",
     "prettier": "^3.3.3",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
-  },
-  "pkg": {
-    "targets": [ "node18-win-x64", "node18-linux-x64", "node18-macos-x64" ],
-    "outputPath": "dist"
   },
   "engines": {
     "node": ">=20.0.0",

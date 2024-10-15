@@ -13,41 +13,40 @@ export class DNSChanger {
   }
 
   async start() {
-     try {
-       this.init()
+    try {
+      this.init()
 
-       console.log(chalk.blue('Fetching current DNS settings...'))
-       this.displayCurrentDNS()
+      console.log(chalk.blue('Fetching current DNS settings...'))
+      this.displayCurrentDNS()
 
-       const { dnsOption, interfaceNames } = await this.promptDNSChange()
-       if (!interfaceNames.length) {
-         console.log(chalk.yellow('No interface selected. Exiting...'))
-         return
-       }
+      const { dnsOption, interfaceNames } = await this.promptDNSChange()
+      if (!interfaceNames.length) {
+        console.log(chalk.yellow('No interface selected. Exiting...'))
+        return
+      }
 
-       let servers = []
-       if (dnsOption === DNSOptions.GOOGLE) {
-         servers = this.knowDNS.google
-       } else if (dnsOption === DNSOptions.CLOUDFLARE) {
-         servers = this.knowDNS.cloudflare
-       } else if (dnsOption === DNSOptions.BOTH) {
-         servers = [...this.knowDNS.google, ...this.knowDNS.cloudflare]
-       } else if (dnsOption === DNSOptions.CUSTOM) {
-         const { ipv4DNS, ipv6DNS } = await this.promptCustomDNS()
-         servers = [ipv4DNS, ipv6DNS].filter(Boolean)
-       } else if (dnsOption === DNSOptions.ERASED) {
-         //  delete all DNS
-       }
+      let servers = []
+      if (dnsOption === DNSOptions.GOOGLE) {
+        servers = this.knowDNS.google
+      } else if (dnsOption === DNSOptions.CLOUDFLARE) {
+        servers = this.knowDNS.cloudflare
+      } else if (dnsOption === DNSOptions.BOTH) {
+        servers = [...this.knowDNS.google, ...this.knowDNS.cloudflare]
+      } else if (dnsOption === DNSOptions.CUSTOM) {
+        const { ipv4DNS, ipv6DNS } = await this.promptCustomDNS()
+        servers = [ipv4DNS, ipv6DNS].filter(Boolean)
+      } else if (dnsOption === DNSOptions.ERASED) {
+        //  delete all DNS
+      }
 
-       for (const interfaceName of interfaceNames) {
-         await this.updateDNS(interfaceName, servers)
-       }
+      for (const interfaceName of interfaceNames) {
+        await this.updateDNS(interfaceName, servers)
+      }
 
-       this.waitForExit()
-
+      this.waitForExit()
     } catch (error: any) {
-       console.error(chalk.red(`Error: ${error.message}`))
-     }
+      console.error(chalk.red(`Error: ${error.message}`))
+    }
   }
 
   init() {
@@ -58,7 +57,7 @@ export class DNSChanger {
     console.log('Updating DNS addresses for ', chalk.yellow(interfaceName), 'with servers', servers)
 
     const currentServers = getServers()
-    const newServers = servers.filter(server => !currentServers.includes(server))
+    const newServers = servers.filter((server) => !currentServers.includes(server))
     this.platformHandler!.updateDNS(interfaceName, newServers)
   }
 
