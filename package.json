@@ -1,6 +1,6 @@
 {
   "name": "zapdns",
-  "version": "0.1.1-beta",
+  "version": "1.0.0",
   "private": true,
   "engine": {},
   "description": "ZapDNS is a cross-platform tool for quickly managing and switching DNS settings to save time and optimize network configurations.",
